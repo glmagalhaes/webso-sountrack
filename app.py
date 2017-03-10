@@ -58,6 +58,19 @@ def parsePerformers(trackInfo):
             startIndex = trackInfoLow.find("sung by", endIndex)
             if(startIndex != -1):
                 startIndex += len("sung by")
+            else:
+                startIndex = trackInfoLow.find("music by", endIndex)
+                if(startIndex != -1):
+                    startIndex += len("music by")
+                else:
+                    startIndex = trackInfoLow.find("written by", endIndex)
+                    if(startIndex != -1):
+                        startIndex += len("written by")
+                    else:
+                        startIndex = trackInfoLow.find("composed by", endIndex)
+                        if(startIndex != -1):
+                            startIndex += len("composed by")
+                        
         
         if(startIndex != -1):
             endIndex = trackInfoLow.find("\n",startIndex)
