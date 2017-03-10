@@ -128,6 +128,7 @@ def get_tracks():
         year = request.args['year']
     except:
         return Response("Year ou Title Não informado")
+    title = title.strip()
     formattedMovie = "# %s (%s)" % (title, year)
     formattedMovie = formattedMovie.encode(encoding='UTF-8',errors='strict')
     tracks = []
