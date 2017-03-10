@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import os
 import re
 import sys
@@ -13,6 +14,7 @@ from flask import request
 from flask import Response
 
 
+#Classe que define cada música
 class Track:
     def __init__(self,title,performers,links=None):
         self.title = title
@@ -83,19 +85,7 @@ def parsePerformers(trackInfo):
     
     return p
 
-def searchYoutube(music,track):
-    l = []
-    textToSearch = music
-    query = urllib.quote(textToSearch)
-    url = "https://www.youtube.com/results?search_query=" + query
-    response = urllib2.urlopen(url)
-    html = response.read()
-    soup = BeautifulSoup(html, "html5lib")
-    for vid in soup.findAll(attrs={'class':'yt-uix-tile-link'},limit=3):   #3 primeiros links
-        if not vid['href'].startswith("https://googleads.g.doubleclick.net/"):
-            link = 'https://www.youtube.com' + vid['href']
-            track.addLink(link.encode(encoding='UTF-8',errors='strict'))
-    
+
     
 def parse(data):
     delimiter = "- \""
@@ -114,8 +104,6 @@ def parse(data):
         performers = parsePerformers(trackInfo)
         track = Track(trackTitle,performers)
         perfs = track.mergePerformers()
-        music = perfs + " " + trackTitle #string pra busca no youtube formato: performerA and performerB musicTitle
-        #searchYoutube(music,track)
         l.append(track)
         #print("#######")
         cont += 1
@@ -123,12 +111,16 @@ def parse(data):
     return l    
 
 app = Flask(__name__)
+
+# Para poder ser acessado por serviços externos
 CORS(app)
 
+# URL de teste, caso consiga ver essa mensagem o Flask iniciou normalmente
 @app.route('/')
 def server_ok():
     return Response('<h1>Server OK<h1>')
 
+# Recebe as informações de filme e ano e procura pelo filme
 @app.route('/request', methods = ['GET', 'OPTIONS'])
 def get_tracks():
     try:
@@ -152,4 +144,6 @@ def get_tracks():
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
+
+#Para Rodar em uma maquina local troque o ip por 127.0.0.1
 app.run(host=os.getenv('IP', '0.0.0.0'),port=int(os.getenv('PORT', 8080)))
