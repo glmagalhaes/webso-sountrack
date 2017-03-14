@@ -10,3 +10,8 @@ $pip install flask flask_cors
 Para rodar o Webservice:
 
 $sh runflask.sh
+
+
+Obs.: Essa versão possui uma busca por links no youtube (infelizmente bem lenta), caso não necessite disso comente
+desde a linha 142 até a linha 144 do arquivo app.py
+Obs.2: Essa busca é cacheada, ou seja, a primeira vez que se buscar uma música+artista será lenta, nas próximas não =)
