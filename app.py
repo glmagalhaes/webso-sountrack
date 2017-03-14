@@ -16,28 +16,49 @@ from flask import Response
 
 #Classe que define cada música
 class Track:
-    def __init__(self,title,performers,links=None):
+    def __init__(self,title,performers,link=None):
         self.title = title
-        #self.composers = composers
         self.performers = performers
-        #self.producers = producers
-        if(links is None):
-            self.links =[]
-    
-    #def addComposer(self,composer):
-        #self.composers += composer
     
     def addPerformer(self,performer):
         self.performers.append(performer)
         
     def addLink(self,link):
-        #print(str(self.links))
-        self.links.append(link)
-    #def addProducers(self,producer):
-        #self.producers += producer
+        self.link = link
+    def getLink(self):
+        return self.link
     
     def mergePerformers(self):
         return ' and '.join(self.performers)
+
+def searchCache(music,track):
+    cache = open("youtube.cache").read()
+    delimiter = music+" # "
+    startIndex = cache.find(delimiter)
+    if(startIndex==-1):
+        return False
+    else:
+        endIndex = cache.find("|",startIndex+1)
+        link = cache[startIndex+len(delimiter):endIndex]
+        track.addLink(link)
+        return True
+
+def fillCache(music,link):
+    with open("youtube.cache", "a") as myCache:
+        myCache.write(music+" # "+link+"|\n")
+
+def searchYoutube(music,track):
+    l = []
+    textToSearch = music
+    query = urllib.quote(textToSearch)
+    url = "https://www.youtube.com/results?search_query=" + query
+    response = urllib2.urlopen(url)
+    html = response.read()
+    soup = BeautifulSoup(html, "html5lib")
+    for vid in soup.findAll(attrs={'class':'yt-uix-tile-link'},limit=1):   #3 primeiros links
+        if not vid['href'].startswith("https://googleads.g.doubleclick.net/"):
+            link = 'https://www.youtube.com' + vid['href']
+            track.addLink(link.encode(encoding='UTF-8',errors='strict'))
 
 def parseTitle(trackInfo):
     startIndex = trackInfo.find("\"")
@@ -117,6 +138,10 @@ def parse(data):
         performers = parsePerformers(trackInfo)
         track = Track(trackTitle,performers)
         perfs = track.mergePerformers()
+        music = perfs + " " + trackTitle #string pra busca no youtube formato: performerA and performerB musicTitle
+        if(not searchCache(music,track)):    #caso não queira link do youtube, comentar daqui ate linha 144
+            searchYoutube(music,track)
+            fillCache(music,track.getLink())
         l.append(track)
         #print("#######")
         cont += 1
