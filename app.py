@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
 import re
 import sys
 import json
 import urllib
 import urllib2
+from urlparse import urlparse
 from bs4 import BeautifulSoup
 from flask_cors import CORS
 from flask import Flask
@@ -59,6 +59,12 @@ def searchYoutube(music,track):
         if not vid['href'].startswith("https://googleads.g.doubleclick.net/"):
             link = 'https://www.youtube.com' + vid['href']
             track.addLink(link.encode(encoding='UTF-8',errors='strict'))
+
+def searchYoutube2(music,track):  #essa busca parece ser mais rapida.....
+    query_string = urllib.urlencode({"search_query" : music})
+    html_content = urllib.urlopen("http://www.youtube.com/results?" + query_string)
+    search_results = re.findall(r'href=\"\/watch\?v=(.{11})', html_content.read().decode())
+    track.addLink("http://www.youtube.com/watch?v=" + search_results[0])
 
 def parseTitle(trackInfo):
     startIndex = trackInfo.find("\"")
@@ -140,7 +146,7 @@ def parse(data):
         perfs = track.mergePerformers()
         music = perfs + " " + trackTitle #string pra busca no youtube formato: performerA and performerB musicTitle
         if(not searchCache(music,track)):    #caso não queira link do youtube, comentar daqui ate linha 144
-            searchYoutube(music,track)
+            searchYoutube2(music,track)
             fillCache(music,track.getLink())
         l.append(track)
         #print("#######")
