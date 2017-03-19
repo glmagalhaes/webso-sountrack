@@ -19,6 +19,7 @@ class Track:
     def __init__(self,title,performers,link=None):
         self.title = title
         self.performers = performers
+        self.link=link
     
     def addPerformer(self,performer):
         self.performers.append(performer)
@@ -64,7 +65,8 @@ def searchYoutube2(music,track):  #essa busca parece ser mais rapida.....
     query_string = urllib.urlencode({"search_query" : music})
     html_content = urllib.urlopen("http://www.youtube.com/results?" + query_string)
     search_results = re.findall(r'href=\"\/watch\?v=(.{11})', html_content.read().decode())
-    track.addLink("http://www.youtube.com/watch?v=" + search_results[0])
+    if(len(search_results)>0):
+        track.addLink("http://www.youtube.com/watch?v=" + search_results[0])
 
 def parseTitle(trackInfo):
     startIndex = trackInfo.find("\"")
@@ -147,7 +149,8 @@ def parse(data):
         music = perfs + " " + trackTitle #string pra busca no youtube formato: performerA and performerB musicTitle
         if(not searchCache(music,track)):    #caso não queira link do youtube, comentar daqui ate linha 144
             searchYoutube2(music,track)
-            fillCache(music,track.getLink())
+            if( track.getLink() is not None):
+                fillCache(music,track.getLink())
         l.append(track)
         #print("#######")
         cont += 1
@@ -179,7 +182,7 @@ def get_tracks():
     soundtracks = open("soundtracks_utf8.list").read()
     
     startIndex = soundtracks.lower().find(formattedMovie.lower())
-    endIndex = soundtracks.find("#",startIndex+1)
+    endIndex = soundtracks.find("# ",startIndex+1)
     movieData = soundtracks[startIndex:endIndex]
     newTracks = parse(movieData)
     tracks = tracks + newTracks
