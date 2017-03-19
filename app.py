@@ -145,9 +145,11 @@ def parse(data):
         #print(trackTitle)
         performers = parsePerformers(trackInfo)
         track = Track(trackTitle,performers)
+        
+        #COMENTAR DA LINHA 150 ATÉ A LINHA 155 PRA IGNORAR YOUTUBE
         perfs = track.mergePerformers()
         music = perfs + " " + trackTitle #string pra busca no youtube formato: performerA and performerB musicTitle
-        if(not searchCache(music,track)):    #caso não queira link do youtube, comentar daqui ate linha 144
+        if(not searchCache(music,track)):    
             searchYoutube2(music,track)
             if( track.getLink() is not None):
                 fillCache(music,track.getLink())
